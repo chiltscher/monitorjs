@@ -4,21 +4,53 @@ var toGB = 1073741824
 
 var SystemMonitor = function()
 {
-	this.hostname = os.hostname();
 	this.uptime;
-	this.cpu = {};
+	this.checkUptime();
+	this.memory = this._getMemoryInfo();
+	this.cpu = this._getCpuInfo();
+};
 
-	var cpus = os.cpus()
+SystemMonitor.prototype._getCpuInfo = function()
+{
+	var os_cpu = os.cpus();
+	var cpu = {}
 
-	this.cpu.load;
-	this.cpu.cores = cpus.length;
-	this.cpu.speed = cpus.speed;
-	this.cpu.model = cpus.model;
-	this.memory = {}
-	this.memory.totalmem = (os.totalmem() / toGB).toFixed(1);
-	this.memory.freemem;
-	this.memory.usedmem;
-	this.memory.percentage;
+	cpu.load;
+	cpu.cores = os_cpu.length;
+	cpu.speed = os_cpu.speed;
+	cpu.model = os_cpu.model;
+
+	return cpu;
+};
+
+SystemMonitor.prototype._getMemoryInfo = function()
+ {
+ 	var memory = {};
+
+	memory.totalmem = (os.totalmem() / toGB).toFixed(1);	
+	memory.freemem;
+	memory.usedmem;
+	memory.percentage;
+
+	return memory;
+ };
+
+SystemMonitor.prototype._getNetworkInformation = function()
+{
+	var os_nwif = os.networkInterfaces();
+	var nwif = {};
+	this.hostname = os.hostname();
+	if (os_nwif['WLAN'])
+	{
+		nwif.type = 'WLAN'
+		os_nwif = os_nwif['WLAN']
+	}
+	if (os_nwif['Ethernet'])
+	{
+		nwif.type = 'Ethernet'
+		os_nwif = os_nwif['Ethernet']
+	}
+
 };
 
 SystemMonitor.prototype.checkUptime = function()
@@ -28,7 +60,6 @@ SystemMonitor.prototype.checkUptime = function()
 	var minutes = Math.floor((seconds - hours * 3600) / 60 );
 	seconds = Math.floor(seconds - hours * 3600 - minutes * 60);
 	this.uptime = this.adapt(hours) + ":" + this.adapt(minutes) + ":" + this.adapt(seconds); 
-
 };
 
 SystemMonitor.prototype.checkMemory = function()
