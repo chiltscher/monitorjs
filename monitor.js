@@ -2,7 +2,7 @@ var os = require('os');
 var cpu = require('windows-cpu');
 var toGB = 1073741824
 
-var MonitorClient = function()
+var SystemMonitor = function()
 {
 	this.hostname = os.hostname();
 	this.uptime;
@@ -21,7 +21,7 @@ var MonitorClient = function()
 	this.memory.percentage;
 };
 
-MonitorClient.prototype.checkUptime = function()
+SystemMonitor.prototype.checkUptime = function()
 {
 	var seconds = os.uptime();
 	var hours = Math.floor(seconds/3600);
@@ -31,7 +31,7 @@ MonitorClient.prototype.checkUptime = function()
 
 };
 
-MonitorClient.prototype.checkMemory = function()
+SystemMonitor.prototype.checkMemory = function()
 {
 	var memory = this.memory;
 	memory.freemem = (os.freemem() / toGB).toFixed(1);
@@ -39,7 +39,7 @@ MonitorClient.prototype.checkMemory = function()
 	memory.percentage = Math.round((100/memory.totalmem) * memory.usedmem);
 };
 
-MonitorClient.prototype.checkLoad = function()
+SystemMonitor.prototype.checkLoad = function()
 {
 	var that = this;
 	cpu.totalLoad(
@@ -51,7 +51,7 @@ MonitorClient.prototype.checkLoad = function()
 	});
 };
 
-MonitorClient.prototype.update = function(callback)
+SystemMonitor.prototype.update = function(callback)
 {
 	this.checkLoad();
 	this.checkUptime();
@@ -59,7 +59,7 @@ MonitorClient.prototype.update = function(callback)
 	callback(this);
 };
 
-MonitorClient.prototype.display = function()
+SystemMonitor.prototype.display = function()
 {
 	this.clearScreen();
 	console.log(this.hostname);
@@ -71,7 +71,7 @@ MonitorClient.prototype.display = function()
 
 
 // Clear Console function
-MonitorClient.prototype.clearScreen = function()
+SystemMonitor.prototype.clearScreen = function()
 {
 	for(var i = 0; i < process.stdout.rows; i++)
 	{
@@ -80,7 +80,7 @@ MonitorClient.prototype.clearScreen = function()
 };
 
 // Function to set a 0 in front of a one-digit number
-MonitorClient.prototype.adapt = function(number)
+SystemMonitor.prototype.adapt = function(number)
 {
 	if (number < 10)
 		return "0"+number
@@ -88,7 +88,7 @@ MonitorClient.prototype.adapt = function(number)
 		return number+""
 };
 
-var monitor = new MonitorClient();
+var monitor = new SystemMonitor();
 var loopID = setInterval(function(){monitor.update(
 	function(monitor)
 	{
