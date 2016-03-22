@@ -21,8 +21,8 @@ SystemMonitor.prototype._getCpuInfo = function()
 
 	cpu.load;
 	cpu.cores = os_cpu.length;
-	cpu.speed = os_cpu.speed;
-	cpu.model = os_cpu.model;
+	cpu.speed = os_cpu[0].speed;
+	cpu.model = os_cpu[0].model;
 
 	return cpu;
 };
@@ -125,6 +125,7 @@ SystemMonitor.prototype.adapt = function(number)
 MonitorServer = function(monitor)
 {
 	this.monitor = monitor;
+	this.sockets = []; 
 	this.httpServer = http.createServer();
 	this.httpServer.listen(8080);
 	this.io = io.listen(this.httpServer)
@@ -132,12 +133,22 @@ MonitorServer = function(monitor)
 }
 MonitorServer.prototype.handler = function()
 {
+	var that = this;
 	var io = this.io;
 
 	io.sockets.on('connection', 
-		function()
+		function(socket)
 		{
 			console.log("Client connected!")
+			var loopID = setInterval(
+				function()
+				{
+					that.monitor.update(
+						function(monitor)
+						{
+							socket.emit('stats', that.monitor);
+						})
+				}, 500);
 		});
 }
 
@@ -146,9 +157,5 @@ var monitor = new SystemMonitor();
 var server = new MonitorServer(monitor);
 
 
-var loopID = setInterval(function(){monitor.update(
-	function(monitor)
-	{
-		monitor.display();
-	})}, 500);
+
 
