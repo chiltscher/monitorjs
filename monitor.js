@@ -1,5 +1,8 @@
 var os = require('os');
 var cpu = require('windows-cpu');
+var http = require('http');
+var io = require('socket.io');
+
 var toGB = 1073741824
 
 var SystemMonitor = function()
@@ -8,6 +11,7 @@ var SystemMonitor = function()
 	this.checkUptime();
 	this.memory = this._getMemoryInfo();
 	this.cpu = this._getCpuInfo();
+
 };
 
 SystemMonitor.prototype._getCpuInfo = function()
@@ -100,7 +104,6 @@ SystemMonitor.prototype.display = function()
 		console.log(this.cpu.load[0] + " %")
 };
 
-
 // Clear Console function
 SystemMonitor.prototype.clearScreen = function()
 {
@@ -119,7 +122,30 @@ SystemMonitor.prototype.adapt = function(number)
 		return number+""
 };
 
+MonitorServer = function(monitor)
+{
+	this.monitor = monitor;
+	this.httpServer = http.createServer();
+	this.httpServer.listen(8080);
+	this.io = io.listen(this.httpServer)
+	this.handler();
+}
+MonitorServer.prototype.handler = function()
+{
+	var io = this.io;
+
+	io.sockets.on('connection', 
+		function()
+		{
+			console.log("Client connected!")
+		});
+}
+
+
 var monitor = new SystemMonitor();
+var server = new MonitorServer(monitor);
+
+
 var loopID = setInterval(function(){monitor.update(
 	function(monitor)
 	{
