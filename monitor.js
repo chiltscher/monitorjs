@@ -1,12 +1,16 @@
+var express = require('express');
+var app = express();
+var http = require('http');
 var os = require('os');
 var cpu = require('windows-cpu');
-var http = require('http');
 var io = require('socket.io');
+var config = require('./configuration.json');
 
 var toGB = 1073741824
 
 var SystemMonitor = function()
 {
+	this.hostname = os.hostname();
 	this.uptime;
 	this.checkUptime();
 	this.memory = this._getMemoryInfo();
@@ -54,7 +58,6 @@ SystemMonitor.prototype._getNetworkInformation = function()
 		nwif.type = 'Ethernet'
 		os_nwif = os_nwif['Ethernet']
 	}
-
 };
 
 SystemMonitor.prototype.checkUptime = function()
@@ -126,12 +129,16 @@ MonitorServer = function(monitor)
 {
 	this.monitor = monitor;
 	this.sockets = []; 
-	this.httpServer = http.createServer();
-	this.httpServer.listen(8080);
+	this.httpServer = http.createServer(app);
+	this.httpServer.listen(8888, 'localhost');
 	this.io = io.listen(this.httpServer)
-	this.handler();
+	if (config.standalone)
+	{
+		this._standaloneServer();
+		this._socketHandler();
+	}
 }
-MonitorServer.prototype.handler = function()
+MonitorServer.prototype._socketHandler = function()
 {
 	var that = this;
 	var io = this.io;
@@ -146,9 +153,20 @@ MonitorServer.prototype.handler = function()
 					that.monitor.update(
 						function(monitor)
 						{
-							socket.emit('stats', that.monitor);
+							io.sockets.emit('stats', that.monitor);
 						})
 				}, 500);
+		});
+}
+
+MonitorServer.prototype._standaloneServer = function()
+{
+	var that = this;
+	app.use(express.static('app'))
+	app.get('/',
+		function(request, response)
+		{
+			response.redirect('monitor.html')
 		});
 }
 

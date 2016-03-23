@@ -1,8 +1,39 @@
 //Client-side monitor js application
 
-var socket = io.connect('http://localhost:8080');
-socket.on('stats',
-	function(data)
+
+
+monitorClient = function()
+{
+	this.hostnameDiv = $('#hostname');
+	this.cpuModelDiv = $('#cpuModel');
+	this.cpuSpeedDiv = $('#cpuSpeed');
+	this.cpuLoadDiv = $('#cpuLoad');
+	this.memoryDiv = $('#memory');
+	this.socket = io.connect('http://localhost:8888');
+	this._socketHandler();
+}
+
+monitorClient.prototype._update = function(data)
+{
+	this.hostnameDiv.text("Hostname    : " + data.hostname);
+	this.cpuModelDiv.text("CPU Model   : " + data.cpu.model);
+	this.cpuSpeedDiv.text("CPU Speed   : " + data.cpu.cores + " x " + data.cpu.speed);
+	this.cpuLoadDiv.text("CPU Load    : " + data.cpu.load[0] + " %");
+	this.memoryDiv.text("Memory      : " + data.memory.usedmem + "/" + data.memory.totalmem + " GB (" + data.memory.percentage + "%)")
+}
+
+monitorClient.prototype._socketHandler = function()
+{
+	var that = this;
+	this.socket.on('stats',
+		function(data)
+		{
+			that._update(data)
+		});
+}
+
+$(document).ready(
+	function()
 	{
-		console.log(data)
+		var client = new monitorClient();
 	});
