@@ -159,7 +159,7 @@ MonitorServer = function(monitor)
 	this.monitor = monitor;
 	this.sockets = []; 
 	this.httpServer = http.createServer(app);
-	this.httpServer.listen(8889);
+	this.httpServer.listen(8889, 'master');
 	this.io = io.listen(this.httpServer)
 	if (config.standalone)
 	{

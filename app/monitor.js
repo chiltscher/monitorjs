@@ -9,7 +9,7 @@ monitorClient = function()
 	this.cpuSpeedDiv = $('#cpuSpeed');
 	this.cpuLoadDiv = $('#cpuLoad');
 	this.memoryDiv = $('#memory');
-	this.socket = io.connect('http://localhost:8889');
+	this.socket = io.connect('http://master:8889');
 	this._socketHandler();
 }
 
