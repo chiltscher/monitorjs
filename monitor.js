@@ -159,8 +159,9 @@ MonitorServer = function(monitor)
 	this.monitor = monitor;
 	this.sockets = []; 
 	this.httpServer = http.createServer(app);
-	this.httpServer.listen(8889, 'master');
-	this.io = io.listen(this.httpServer)
+	this.httpServer.listen(8889);
+	this.socketServer = io.listen(this.httpServer)
+	this.namespace = this.socketServer.of("/sysMon")
 	if (config.standalone)
 	{
 		this._standaloneServer();
@@ -170,9 +171,9 @@ MonitorServer = function(monitor)
 MonitorServer.prototype._socketHandler = function()
 {
 	var that = this;
-	var io = this.io;
+	var sockets = this.namespace;
 
-	io.sockets.on('connection', 
+	sockets.on('connection', 
 		function(socket)
 		{
 			console.log("Client connected!")
