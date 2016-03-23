@@ -12,12 +12,14 @@ var toGB = 1073741824
 
 var SystemMonitor = function()
 {
-	this.hostname = os.hostname();
-	this.platform = this._getPlatform();
-	this.uptime;
+	this.data = {};
+	this.data.hostname = os.hostname();
+	this.data.platform = this._getPlatform();
+	this.data.loopID;
+	this.data.uptime;
 	this.checkUptime();
-	this.memory = this._getMemoryInfo();
-	this.cpu = this._getCpuInfo();
+	this.data.memory = this._getMemoryInfo();
+	this.data.cpu = this._getCpuInfo();
 
 };
 SystemMonitor.prototype._getPlatform = function()
@@ -69,7 +71,6 @@ SystemMonitor.prototype._getNetworkInformation = function()
 {
 	var os_nwif = os.networkInterfaces();
 	var nwif = {};
-	this.hostname = os.hostname();
 	if (os_nwif['WLAN'])
 	{
 		nwif.type = 'WLAN'
@@ -88,12 +89,12 @@ SystemMonitor.prototype.checkUptime = function()
 	var hours = Math.floor(seconds/3600);
 	var minutes = Math.floor((seconds - hours * 3600) / 60 );
 	seconds = Math.floor(seconds - hours * 3600 - minutes * 60);
-	this.uptime = this.adapt(hours) + ":" + this.adapt(minutes) + ":" + this.adapt(seconds); 
+	this.data.uptime = this.adapt(hours) + ":" + this.adapt(minutes) + ":" + this.adapt(seconds); 
 };
 
 SystemMonitor.prototype.checkMemory = function()
 {
-	var memory = this.memory;
+	var memory = this.data.memory;
 	memory.freemem = (os.freemem() / toGB).toFixed(1);
 	memory.usedmem = (memory.totalmem - memory.freemem).toFixed(1);
 	memory.percentage = Math.round((100/memory.totalmem) * memory.usedmem);
@@ -102,18 +103,18 @@ SystemMonitor.prototype.checkMemory = function()
 SystemMonitor.prototype.checkLoad = function()
 {
 	var that = this;
-	if (this.platform == 'Windows')
+	if (this.data.platform == 'Windows')
 	{
 		cpu.totalLoad(
 			function(error, results)
 			{
 				if(error)
 					return console.log(error);
-				that.cpu.load = results
+				that.data.cpu.load = results
 		});
 	}
 	else
-		this.cpu.load = 'unknown'
+		this.data.cpu.load = 'unknown'
 };
 
 SystemMonitor.prototype.update = function(callback)
@@ -121,17 +122,18 @@ SystemMonitor.prototype.update = function(callback)
 	this.checkLoad();
 	this.checkUptime();
 	this.checkMemory();
-	callback(this);
+	if(callback)
+		callback(this);
 };
 
 SystemMonitor.prototype.display = function()
 {
 	this.clearScreen();
-	console.log(this.hostname);
-	console.log(this.uptime);
-	console.log(this.memory.usedmem + "/" + this.memory.totalmem + " GB (" + this.memory.percentage + "%)");
+	console.log(this.data.hostname);
+	console.log(this.data.uptime);
+	console.log(this.data.memory.usedmem + "/" + this.data.memory.totalmem + " GB (" + this.data.memory.percentage + "%)");
 	if (this.cpu.load)
-		console.log(this.cpu.load[0] + " %")
+		console.log(this.data.cpu.load[0] + " %")
 };
 
 // Clear Console function
@@ -174,31 +176,65 @@ MonitorServer.prototype._socketHandler = function()
 		function(socket)
 		{
 			console.log("Client connected!")
-			var loopID = setInterval(
-				function()
-				{
-					that.monitor.update(
-						function(monitor)
-						{
-							io.sockets.emit('stats', that.monitor);
-						})
-				}, 500);
+			that.sockets.push(socket);
+			that._startEvents(socket)
 		});
+
+};
+
+MonitorServer.prototype._startEvents = function(socket)
+{
+	var that = this;
+	var data = this.monitor.data
+
+	var callbackID = setInterval(function()
+	{
+		socket.emit('stats', data);
+	}, 500);
+
+	socket.on('disconnect',
+		function(socket)
+		{
+			console.log("Client disconnected!");
+			that._removeSocketFromList();
+		});
+
 }
+
+MonitorServer.prototype._removeSocketFromList = function()
+{
+	var sockets = this.sockets;
+	for(socket in sockets)
+	{
+		var currentSocket = sockets[socket];
+		if(currentSocket.disconnected)
+		{
+			var index = sockets.indexOf(currentSocket);
+			if(index > -1)
+				sockets.splice(index, 1);
+		}
+	}
+	console.log('Socket successfully removed!')
+};
 
 MonitorServer.prototype._standaloneServer = function()
 {
 	var that = this;
-	app.use(express.static('app'))
+	app.use(express.static('./app'))
 	app.get('/',
 		function(request, response)
 		{
-			response.redirect('monitor.html')
+			response.sendfile('./app/monitor.html')
 		});
-}
+};
 
 
 var monitor = new SystemMonitor();
+monitor.loopID = setInterval(
+					function()
+					{
+						monitor.update()
+					}, 500);
 var server = new MonitorServer(monitor);
 
 
