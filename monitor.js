@@ -1,3 +1,5 @@
+
+//Serverside App
 var express = require('express');
 var app = express();
 var http = require('http');
@@ -11,12 +13,32 @@ var toGB = 1073741824
 var SystemMonitor = function()
 {
 	this.hostname = os.hostname();
+	this.platform = this._getPlatform();
 	this.uptime;
 	this.checkUptime();
 	this.memory = this._getMemoryInfo();
 	this.cpu = this._getCpuInfo();
 
 };
+SystemMonitor.prototype._getPlatform = function()
+{
+	var platform = os.platform()
+	switch(platform)
+	{
+		case 'win32':
+			platform = 'Windows';
+			break;
+		case 'linux':
+			platform = 'Linux';
+			break;
+		case 'sunos':
+			platform = 'SunOS'
+			break;
+		default:
+			platform = 'Unknow Operating System'
+	}
+	return platform
+}
 
 SystemMonitor.prototype._getCpuInfo = function()
 {
@@ -80,13 +102,18 @@ SystemMonitor.prototype.checkMemory = function()
 SystemMonitor.prototype.checkLoad = function()
 {
 	var that = this;
-	cpu.totalLoad(
-		function(error, results)
-		{
-			if(error)
-				return console.log(error);
-			that.cpu.load = results
-	});
+	if (this.platform == 'Windows')
+	{
+		cpu.totalLoad(
+			function(error, results)
+			{
+				if(error)
+					return console.log(error);
+				that.cpu.load = results
+		});
+	}
+	else
+		this.cpu.load = 'unknown'
 };
 
 SystemMonitor.prototype.update = function(callback)
@@ -130,7 +157,7 @@ MonitorServer = function(monitor)
 	this.monitor = monitor;
 	this.sockets = []; 
 	this.httpServer = http.createServer(app);
-	this.httpServer.listen(8888, 'localhost');
+	this.httpServer.listen(8889);
 	this.io = io.listen(this.httpServer)
 	if (config.standalone)
 	{

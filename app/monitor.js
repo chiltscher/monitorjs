@@ -9,16 +9,17 @@ monitorClient = function()
 	this.cpuSpeedDiv = $('#cpuSpeed');
 	this.cpuLoadDiv = $('#cpuLoad');
 	this.memoryDiv = $('#memory');
-	this.socket = io.connect('http://localhost:8888');
+	this.socket = io.connect('http://localhost:8889');
 	this._socketHandler();
 }
 
 monitorClient.prototype._update = function(data)
 {
-	this.hostnameDiv.text("Hostname    : " + data.hostname);
+	this.hostnameDiv.text("Hostname    : " + data.hostname + ", " + data.platform);
 	this.cpuModelDiv.text("CPU Model   : " + data.cpu.model);
 	this.cpuSpeedDiv.text("CPU Speed   : " + data.cpu.cores + " x " + data.cpu.speed);
-	this.cpuLoadDiv.text("CPU Load    : " + data.cpu.load[0] + " %");
+	if(data.cpu.load[0])
+		this.cpuLoadDiv.text("CPU Load    : " + data.cpu.load[0] + " %");
 	this.memoryDiv.text("Memory      : " + data.memory.usedmem + "/" + data.memory.totalmem + " GB (" + data.memory.percentage + "%)")
 }
 
