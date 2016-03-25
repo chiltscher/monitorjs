@@ -23,6 +23,7 @@ var SystemMonitor = function()
 	this.data.cpu = this._getCpuInfo();
 
 };
+
 SystemMonitor.prototype._getPlatform = function()
 {
 	var platform = os.platform()
@@ -168,7 +169,8 @@ MonitorServer = function(monitor)
 		this._standaloneServer();
 		this._socketHandler();
 	}
-}
+};
+
 MonitorServer.prototype._socketHandler = function()
 {
 	var that = this;
@@ -181,7 +183,6 @@ MonitorServer.prototype._socketHandler = function()
 			that.sockets.push(socket);
 			that._startEvents(socket)
 		});
-
 };
 
 MonitorServer.prototype._startEvents = function(socket)
@@ -200,7 +201,6 @@ MonitorServer.prototype._startEvents = function(socket)
 			console.log("Client disconnected!");
 			that._removeSocketFromList();
 		});
-
 }
 
 MonitorServer.prototype._removeSocketFromList = function()
@@ -229,7 +229,6 @@ MonitorServer.prototype._standaloneServer = function()
 			response.sendfile('./app/monitor.html')
 		});
 };
-
 
 var monitor = new SystemMonitor();
 monitor.loopID = setInterval(
