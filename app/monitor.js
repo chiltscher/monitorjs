@@ -12,6 +12,7 @@ monitorClient = function()
 	this.memoryDiv = $('#memory');
 
 	this.cpuStat = $('#cpu');
+	this.mem = $('#mem');
 
 	this.socket = io.connect('/sysMon');
 	this._socketHandler();
@@ -29,10 +30,15 @@ monitorClient.prototype._update = function(data)
 
 
 	//update progressbar
-	var pb = this.cpuStat;
+	var pb1 = this.cpuStat;
 	var load = data.cpu.load[0];
-	pb.text(load + " %")
-	pb.width(load + "%")
+	pb1.text(load + " %");
+	pb1.width(load + "%");
+
+	var pb2 = this.mem;
+	var load = data.memory.percentage;
+	pb2.text(data.memory.percentage + " %");
+	pb2.width(data.memory.percentage + "%");
 }
 
 monitorClient.prototype._socketHandler = function()

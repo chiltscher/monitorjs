@@ -6,6 +6,7 @@ var http = require('http');
 var os = require('os');
 var cpu = require('windows-cpu');
 var io = require('socket.io');
+var fs = require('fs');
 var config = require('./configuration.json');
 
 var toGB = 1073741824
