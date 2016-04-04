@@ -160,9 +160,12 @@ MonitorServer = function(monitor)
 {
 	this.monitor = monitor;
 	this.sockets = []; 
+	this.ip = 'localhost'
+	this.port = 8888;
 	this.httpServer = http.createServer(app);
-	this.httpServer.listen(8889);
+	this.httpServer.listen(this.port, this.localhost);
 	this.socketServer = io.listen(this.httpServer)
+	console.log("Server is running @ "+this.ip+":"+this.port)
 	this.namespace = this.socketServer.of("/sysMon")
 	if (config.standalone)
 	{
@@ -198,7 +201,7 @@ MonitorServer.prototype._startEvents = function(socket)
 	socket.on('disconnect',
 		function(socket)
 		{
-			console.log("Client disconnected!");
+			//console.log("Client disconnected!");
 			that._removeSocketFromList();
 		});
 }
@@ -216,7 +219,7 @@ MonitorServer.prototype._removeSocketFromList = function()
 				sockets.splice(index, 1);
 		}
 	}
-	console.log('Socket successfully removed!')
+	//console.log('Socket successfully removed!')
 };
 
 MonitorServer.prototype._standaloneServer = function()

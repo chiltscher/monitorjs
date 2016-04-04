@@ -25,8 +25,8 @@ monitorClient.prototype._update = function(data)
 	this.cpuModelDiv.text("CPU Model : " + data.cpu.model);
 	this.cpuSpeedDiv.text("CPU Speed : " + data.cpu.cores + " x " + data.cpu.speed + " MHz");
 	if(data.cpu.load[0])
-		this.cpuLoadDiv.text("CPU Load : " + data.cpu.load[0] + " %");
-	this.memoryDiv.text("Memory : " + data.memory.usedmem + "/" + data.memory.totalmem + " GB (" + data.memory.percentage + "%)")
+		this.cpuLoadDiv.text("CPU Load : ");
+	this.memoryDiv.text("Memory : " + data.memory.usedmem + "/" + data.memory.totalmem + " GB")
 
 
 	//update progressbar
