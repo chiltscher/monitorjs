@@ -1,4 +1,3 @@
-
 //Serverside App
 var express = require('express');
 var app = express();
@@ -16,11 +15,13 @@ var SystemMonitor = function()
 	this.data = {};
 	this.data.hostname = os.hostname();
 	this.data.platform = this._getPlatform();
+	//this.data.architecture = this._getArch();
 	this.data.loopID;
 	this.data.uptime;
 	this.checkUptime();
 	this.data.memory = this._getMemoryInfo();
 	this.data.cpu = this._getCpuInfo();
+	//this.nwif = this._getNetworkInformation();
 
 };
 
@@ -44,6 +45,14 @@ SystemMonitor.prototype._getPlatform = function()
 	return platform
 }
 
+SystemMonitor.prototype._getArch = function()
+{
+	var that = this;
+	var arch = os.arch();
+	 if (arch == "ARM")
+	 	return 0, "this is not a pi!"
+}
+
 SystemMonitor.prototype._getCpuInfo = function()
 {
 	var os_cpu = os.cpus();
@@ -61,7 +70,7 @@ SystemMonitor.prototype._getMemoryInfo = function()
  {
  	var memory = {};
 
-	memory.totalmem = (os.totalmem() / toGB).toFixed(1);	
+	memory.totalmem = (os.totalmem() / toGB).toFixed(1);
 	memory.freemem;
 	memory.usedmem;
 	memory.percentage;
@@ -83,6 +92,8 @@ SystemMonitor.prototype._getNetworkInformation = function()
 		nwif.type = 'Ethernet'
 		os_nwif = os_nwif['Ethernet']
 	}
+
+	return nwif
 };
 
 SystemMonitor.prototype.checkUptime = function()
@@ -91,7 +102,7 @@ SystemMonitor.prototype.checkUptime = function()
 	var hours = Math.floor(seconds/3600);
 	var minutes = Math.floor((seconds - hours * 3600) / 60 );
 	seconds = Math.floor(seconds - hours * 3600 - minutes * 60);
-	this.data.uptime = this.adapt(hours) + ":" + this.adapt(minutes) + ":" + this.adapt(seconds); 
+	this.data.uptime = this.adapt(hours) + ":" + this.adapt(minutes) + ":" + this.adapt(seconds);
 };
 
 SystemMonitor.prototype.checkMemory = function()
@@ -112,11 +123,11 @@ SystemMonitor.prototype.checkLoad = function()
 			{
 				if(error)
 					return console.log(error);
-				that.data.cpu.load = results
+				that.data.cpu.load = results;
 		});
 	}
 	else
-		this.data.cpu.load = 'unknown'
+		this.data.cpu.load = 'unknown';
 };
 
 SystemMonitor.prototype.update = function(callback)
@@ -159,7 +170,7 @@ SystemMonitor.prototype.adapt = function(number)
 MonitorServer = function(monitor)
 {
 	this.monitor = monitor;
-	this.sockets = []; 
+	this.sockets = [];
 	this.ip = 'localhost'
 	this.port = 8888;
 	this.httpServer = http.createServer(app);
@@ -179,7 +190,7 @@ MonitorServer.prototype._socketHandler = function()
 	var that = this;
 	var sockets = this.namespace;
 
-	sockets.on('connection', 
+	sockets.on('connection',
 		function(socket)
 		{
 			console.log("Client connected!")
@@ -240,7 +251,3 @@ monitor.loopID = setInterval(
 						monitor.update()
 					}, 500);
 var server = new MonitorServer(monitor);
-
-
-
-

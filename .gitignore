@@ -48,3 +48,4 @@ Temporary Items
 
 # npm libs
 node_modules
+/nbproject/private/

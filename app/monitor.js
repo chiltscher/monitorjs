@@ -1,7 +1,5 @@
 //Client-side monitor js application
 
-
-
 monitorClient = function()
 {
 	this.hostnameDiv = $('#hostname');

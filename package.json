@@ -1,4 +1,5 @@
-{ "dependencies" : {
+{
+ "dependencies" : {
 	"windows-cpu" : "latest",
 	"socket.io" : "*",
 	"express" : "3.x"
